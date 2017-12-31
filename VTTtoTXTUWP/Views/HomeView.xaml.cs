@@ -45,7 +45,7 @@ namespace VTTtoTXTUWP.Views
 
         private void ConvertButton_Click(object sender, RoutedEventArgs e)
         {
-
+            TxtText.Text = VttToTxt(VttText.Text);
         }
 
         private async Task FilePickAsync()
@@ -67,13 +67,14 @@ namespace VTTtoTXTUWP.Views
                 FilePathText.Text = file.Path;
                 fileName = file.Name;
             }
+
+            VttText.Text = await FileIO.ReadTextAsync(file);
         }
 
         private async Task FileSaveAsync()
         {
             var save = new FileSavePicker
             {
-                // save. = PickerViewMode.Thumbnail;
                 SuggestedStartLocation = PickerLocationId.PicturesLibrary
             };
             save.FileTypeChoices.Add("텍스트 파일", new List<String> { ".txt" });
@@ -107,6 +108,47 @@ namespace VTTtoTXTUWP.Views
                 }
             }
             return list;
+        }
+
+        private string VttToTxt(string original)
+        {
+            char[] charArray;
+            string txtContent = "";
+            string line;
+            StringReader reader = new StringReader(original);
+            while (true)
+            {
+                line = reader.ReadLine();
+                if (line != null)
+                {
+                    if (line == "")
+                    {
+                        continue;
+                    }
+                    else if (line.Contains(" --> "))
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        charArray = line.ToCharArray();
+                        if (charArray[charArray.Length - 1] == '.')
+                        {
+                            txtContent += line + " ";
+                        }
+                        else
+                        {
+                            txtContent += line + " ";
+                        }
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return txtContent;
         }
     }
 
