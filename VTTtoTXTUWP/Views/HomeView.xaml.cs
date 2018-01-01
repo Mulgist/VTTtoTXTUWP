@@ -1,17 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -45,7 +36,14 @@ namespace VTTtoTXTUWP.Views
 
         private void ConvertButton_Click(object sender, RoutedEventArgs e)
         {
-            TxtText.Text = VttToTxt(VttText.Text);
+            if ((bool)Option1.IsChecked)
+                TxtText.Text = DontRemoveLineBreaks(VttText.Text);
+            else if ((bool)Option2.IsChecked)
+                TxtText.Text = RemoveExceptPureText(VttText.Text);
+            else if ((bool)Option3.IsChecked)
+                TxtText.Text = RemoveExceptPeriod(VttText.Text);
+            else if ((bool)Option4.IsChecked)
+                TxtText.Text = RemoveAllLineBreaks(VttText.Text);
         }
 
         private async Task FilePickAsync()
@@ -57,7 +55,7 @@ namespace VTTtoTXTUWP.Views
             };
             open.FileTypeFilter.Add(".vtt");
             open.FileTypeFilter.Add("*");
-            
+
 
             file = await open.PickSingleFileAsync();
 
@@ -65,10 +63,9 @@ namespace VTTtoTXTUWP.Views
             {
                 // 파일 로드됨
                 FilePathText.Text = file.Path;
-                fileName = file.Name;
+                fileName = file.Name.Substring(0, file.Name.LastIndexOf('.'));
+                VttText.Text = await FileIO.ReadTextAsync(file);
             }
-
-            VttText.Text = await FileIO.ReadTextAsync(file);
         }
 
         private async Task FileSaveAsync()
@@ -79,15 +76,16 @@ namespace VTTtoTXTUWP.Views
             };
             save.FileTypeChoices.Add("텍스트 파일", new List<String> { ".txt" });
             save.FileTypeChoices.Add("모든 파일", new List<String> { "." });
+            save.SuggestedFileName = fileName;
             save.DefaultFileExtension = ".txt";
 
-            //save.SuggestedSaveFile = saveFile;
-            save.SuggestedFileName = fileName;
-            
             var saveFile = await save.PickSaveFileAsync();
-            var lineList = textRead(TxtText.Text);
-
-            await FileIO.WriteLinesAsync(saveFile, lineList);
+            if (saveFile != null)
+            {
+                // 파일 저장한 다음 텍스트 넣기
+                var lineList = textRead(TxtText.Text);
+                await FileIO.WriteLinesAsync(saveFile, lineList);
+            }
         }
 
         private List<String> textRead(string text)
@@ -110,7 +108,48 @@ namespace VTTtoTXTUWP.Views
             return list;
         }
 
-        private string VttToTxt(string original)
+        // 옵션 1에 대한 함수
+        private string DontRemoveLineBreaks(string original)
+        {
+            string txtContent = "";
+            string line;
+            StringReader reader = new StringReader(original);
+            while (true)
+            {
+                line = reader.ReadLine();
+                if (line != null)
+                    if (line.Contains(" --> ") || line == "WEBVTT")
+                        continue;
+                    else
+                        txtContent += line + '\n';
+                else
+                    break;
+            }
+            return txtContent;
+        }
+
+        // 옵션 2에 대한 함수
+        private string RemoveExceptPureText(string original)
+        {
+            string txtContent = "";
+            string line;
+            StringReader reader = new StringReader(original);
+            while (true)
+            {
+                line = reader.ReadLine();
+                if (line != null)
+                    if (line == "" || line.Contains(" --> ") || line == "WEBVTT")
+                        continue;
+                    else
+                        txtContent += line + '\n';
+                else
+                    break;
+            }
+            return txtContent;
+        }
+
+        // 옵션 3에 대한 함수
+        private string RemoveExceptPeriod(string original)
         {
             char[] charArray;
             string txtContent = "";
@@ -120,36 +159,40 @@ namespace VTTtoTXTUWP.Views
             {
                 line = reader.ReadLine();
                 if (line != null)
-                {
-                    if (line == "")
-                    {
+                    if (line == "" || line.Contains(" --> ") || line == "WEBVTT")
                         continue;
-                    }
-                    else if (line.Contains(" --> "))
-                    {
-                        continue;
-                    }
                     else
                     {
                         charArray = line.ToCharArray();
                         if (charArray[charArray.Length - 1] == '.')
-                        {
-                            txtContent += line + " ";
-                        }
+                            txtContent += line + '\n';
                         else
-                        {
-                            txtContent += line + " ";
-                        }
+                            txtContent += line + ' ';
                     }
-                }
                 else
-                {
                     break;
-                }
             }
+            return txtContent;
+        }
 
+        // 옵션 4에 대한 함수
+        private string RemoveAllLineBreaks(string original)
+        {
+            string txtContent = "";
+            string line;
+            StringReader reader = new StringReader(original);
+            while (true)
+            {
+                line = reader.ReadLine();
+                if (line != null)
+                    if (line == "" || line.Contains(" --> ") || line == "WEBVTT")
+                        continue;
+                    else
+                        txtContent += line + ' ';
+                else
+                    break;
+            }
             return txtContent;
         }
     }
-
 }

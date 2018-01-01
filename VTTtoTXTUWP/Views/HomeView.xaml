@@ -93,16 +93,20 @@
                                  TextAlignment="Center" />
                     <RadioButton x:Name="Option1"
                                  GroupName="ConvertMode"
-                                 Content="DON'T remove linebreaks."
+                                 Content="DON'T remove line breaks."
                                  HorizontalAlignment="Stretch"
                                  IsChecked="True" />
                     <RadioButton x:Name="Option2"
                                  GroupName="ConvertMode"
-                                 Content="Remove linebreaks EXCEPT linbreakes in pure text."
+                                 Content="Remove line breaks EXCEPT in pure text."
                                  HorizontalAlignment="Stretch" />
                     <RadioButton x:Name="Option3"
                                  GroupName="ConvertMode"
-                                 Content="Remove ALL linebreaks."
+                                 Content="Remove line breaks EXCEPT next to periods."
+                                 HorizontalAlignment="Stretch" />
+                    <RadioButton x:Name="Option4"
+                                 GroupName="ConvertMode"
+                                 Content="Remove ALL line breaks."
                                  HorizontalAlignment="Stretch" />
                 </StackPanel>
                 <Button x:Name="ConvertButton"
