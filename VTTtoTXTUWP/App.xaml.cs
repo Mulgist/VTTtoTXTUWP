@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
+using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -18,6 +19,8 @@ namespace VTTtoTXTUWP
         /// 줄이며 따라서 main() 또는 WinMain()과 논리적으로 동일합니다.
         /// </summary>
         public static Stack<string> titleStack = new Stack<string>();
+        // 로컬 앱 세팅 데이터 폴더 검색
+        public static ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
 
         public App()
         {

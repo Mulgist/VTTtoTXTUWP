@@ -22,6 +22,29 @@ namespace VTTtoTXTUWP.Views
         public HomeView()
         {
             InitializeComponent();
+
+            // Object를 건들려면 InitializeComponent()를 먼저 수행한 뒤 진행해야함
+            if (App.localSettings.Values["Option"] != null)
+                switch (App.localSettings.Values["Option"])
+                {
+                    case 1:
+                        Option1.IsChecked = true;
+                        break;
+                    case 2:
+                        Option2.IsChecked = true;
+                        break;
+                    case 3:
+                        Option3.IsChecked = true;
+                        break;
+                    case 4:
+                        Option4.IsChecked = true;
+                        break;
+                }
+            else
+            {
+                App.localSettings.Values["Option"] = 1;
+                Option1.IsChecked = true;
+            }
         }
 
         private async void OpenButton_Click(object sender, RoutedEventArgs e)
@@ -37,13 +60,25 @@ namespace VTTtoTXTUWP.Views
         private void ConvertButton_Click(object sender, RoutedEventArgs e)
         {
             if ((bool)Option1.IsChecked)
+            {
                 TxtText.Text = DontRemoveLineBreaks(VttText.Text);
+                App.localSettings.Values["Option"] = 1;
+            }
             else if ((bool)Option2.IsChecked)
+            {
                 TxtText.Text = RemoveExceptPureText(VttText.Text);
+                App.localSettings.Values["Option"] = 2;
+            }
             else if ((bool)Option3.IsChecked)
+            {
                 TxtText.Text = RemoveExceptPeriod(VttText.Text);
+                App.localSettings.Values["Option"] = 3;
+            }
             else if ((bool)Option4.IsChecked)
+            {
                 TxtText.Text = RemoveAllLineBreaks(VttText.Text);
+                App.localSettings.Values["Option"] = 4;
+            } 
         }
 
         private async Task FilePickAsync()
@@ -54,8 +89,7 @@ namespace VTTtoTXTUWP.Views
                 SuggestedStartLocation = PickerLocationId.PicturesLibrary
             };
             open.FileTypeFilter.Add(".vtt");
-            open.FileTypeFilter.Add("*");
-
+            // open.FileTypeFilter.Add("*");
 
             file = await open.PickSingleFileAsync();
 
